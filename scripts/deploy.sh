@@ -2,12 +2,8 @@
 set -e
 
 # CONFIGURATION
-PROJECT_NAME="'"${PROJECT_NAME}"'"                                    # Project name
-PROJECT_DIR="'"${PROJECT_DIR_PATH}"'"                            # Project directory
-BACKUP_DIR="'"${BACKUP_DIR_PATH}"'"                         # Backup directory
-
-
-# Additional configuration
+PROJECT_NAME="chatapp"                                    # Project name (used for directories and services)
+PROJECT_DIR="/var/www/chatapp"                            # Where to install the project
 REPO_URL="https://github.com/narevent/chatapp.git"       # GitHub repository URL
 DOMAIN_NAMES="chat.vetgaaf.tech"               # Space-separated domain names
 PRIMARY_DOMAIN="chat.vetgaaf.tech"                              # Primary domain (first one)
@@ -198,4 +194,3 @@ echo "  - Configure email settings in .env"
 echo "  - Configure payment gateways in .env (if needed)"
 echo "  - Upload media files if migrating from another server"
 echo ""
-

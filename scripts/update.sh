@@ -2,12 +2,10 @@
 set -e
 
 # CONFIGURATION
-PROJECT_NAME="'"${PROJECT_NAME}"'"                                    # Project name
-PROJECT_DIR="'"${PROJECT_DIR_PATH}"'"                            # Project directory
-BACKUP_DIR="'"${BACKUP_DIR_PATH}"'"                         # Backup directory
-
-
+PROJECT_NAME="chatapp"                                    # Project name
+PROJECT_DIR="/var/www/chatapp"                            # Project directory
 PRIMARY_DOMAIN="chat.vetgaaf.tech"                              # Primary domain
+
 SERVICE_NAME="gunicorn-${PROJECT_NAME}"
 
 echo "================================"
@@ -55,4 +53,3 @@ sudo journalctl -u ${SERVICE_NAME} -n 20 --no-pager
 echo ""
 echo "Site is running at: https://${PRIMARY_DOMAIN}"
 echo ""
-

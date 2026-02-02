@@ -1,12 +1,8 @@
 #!/bin/bash
-set -e
 
 # CONFIGURATION
-PROJECT_NAME="'"${PROJECT_NAME}"'"                                    # Project name
-PROJECT_DIR="'"${PROJECT_DIR_PATH}"'"                            # Project directory
-BACKUP_DIR="'"${BACKUP_DIR_PATH}"'"                         # Backup directory
-
-#!/bin/bash
+PROJECT_NAME="chatapp"                                    # Project name
+PROJECT_DIR="/var/www/chatapp"                            # Project directory
 
 SERVICE_NAME="gunicorn-${PROJECT_NAME}"
 
@@ -54,4 +50,3 @@ case $choice in
         exit 1
         ;;
 esac
-

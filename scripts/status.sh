@@ -1,14 +1,11 @@
 #!/bin/bash
-set -e
 
 # CONFIGURATION
-PROJECT_NAME="'"${PROJECT_NAME}"'"                                    # Project name
-PROJECT_DIR="'"${PROJECT_DIR_PATH}"'"                            # Project directory
-BACKUP_DIR="'"${BACKUP_DIR_PATH}"'"                         # Backup directory
-
-#!/bin/bash
-
+PROJECT_NAME="chatapp"                                    # Project name
+PROJECT_DIR="/var/www/chatapp"                            # Project directory
+BACKUP_DIR="/var/backups/chatapp"                         # Backup directory
 SITE_URL="https://chat.vetgaaf.tech"                            # Primary site URL
+
 SERVICE_NAME="gunicorn-${PROJECT_NAME}"
 
 echo "================================"
@@ -124,4 +121,3 @@ echo "  View logs: bash scripts/logs.sh"
 echo "  Update site: bash scripts/update.sh"
 echo "  Create backup: bash scripts/backup.sh"
 echo ""
-

@@ -14,7 +14,13 @@ UMask=0007
 WorkingDirectory=/var/www/chatapp
 Environment="PATH=/var/www/chatapp/venv/bin"
 EnvironmentFile=/var/www/chatapp/.env
-ExecStart=/var/www/chatapp/venv/bin/gunicorn     --workers 3     --bind unix:/var/www/chatapp/gunicorn.sock     --timeout 60     --access-logfile /var/www/chatapp/logs/gunicorn-access.log     --error-logfile /var/www/chatapp/logs/gunicorn-error.log     chatapp.wsgi:application
+ExecStart=/var/www/chatapp/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/var/www/chatapp/gunicorn.sock \
+    --timeout 60 \
+    --access-logfile /var/www/chatapp/logs/gunicorn-access.log \
+    --error-logfile /var/www/chatapp/logs/gunicorn-error.log \
+    chatapp.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

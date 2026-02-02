@@ -2,10 +2,9 @@
 set -e
 
 # CONFIGURATION
-PROJECT_NAME="'"${PROJECT_NAME}"'"                                    # Project name
-PROJECT_DIR="'"${PROJECT_DIR_PATH}"'"                            # Project directory
-BACKUP_DIR="'"${BACKUP_DIR_PATH}"'"                         # Backup directory
-
+PROJECT_NAME="chatapp"                                    # Project name
+PROJECT_DIR="/var/www/chatapp"                            # Project directory
+BACKUP_DIR="/var/backups/chatapp"                         # Backup directory
 
 DATE=$(date +%Y%m%d_%H%M%S)
 
@@ -52,4 +51,4 @@ sudo ls -lh $BACKUP_DIR/
 echo ""
 echo "Backup complete!"
 echo "Backup location: $BACKUP_DIR"
-echo "
+echo ""
