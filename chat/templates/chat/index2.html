@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f0f0f;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #111111;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #2a2a2a;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .conversations {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .conversation-item {
+            padding: 14px 16px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border: 1px solid transparent;
+        }
+
+        .conversation-item:hover {
+            background: #1f1f1f;
+            border-color: #2a2a2a;
+            color: #d1d5db;
+        }
+
+        .conversation-item.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border-color: #6366f1;
+            color: #e5e7eb;
+        }
+
+        .conversation-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .delete-btn {
+            opacity: 0;
+            padding: 6px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            color: #ef4444;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .conversation-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+        }
+
+        .chat-header {
+            padding: 24px 32px;
+            background: #111111;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .chat-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f3f4f6;
+            flex: 1;
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .model-selector label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #9ca3af;
+        }
+
+        .model-selector select {
+            padding: 10px 16px;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #1a1a1a;
+            color: #e5e7eb;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            min-width: 200px;
+        }
+
+        .model-selector select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .settings-btn {
+            padding: 10px 18px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #9ca3af;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: #1f1f1f;
+            border-color: #374151;
+            color: #d1d5db;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .message {
+            display: flex;
+            gap: 14px;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 18px 22px;
+            border-radius: 16px;
+            line-height: 1.7;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        .message-content pre {
+            background: #0d0d0d;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 0;
+            overflow: hidden;
+            margin: 14px 0;
+            position: relative;
+        }
+
+        .code-header {
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-language {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .code-copy-btn {
+            padding: 4px 10px;
+            background: #111111;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            color: #9ca3af;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .code-copy-btn:hover {
+            background: #1f1f1f;
+            color: #d1d5db;
+            border-color: #374151;
+        }
+
+        .message-content pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .message-content code {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .message-content :not(pre) > code {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #a5b4fc;
+        }
+
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #f3f4f6;
+        }
+
+        .message-content ul, .message-content ol {
+            margin: 10px 0;
+            padding-left: 26px;
+        }
+
+        .message-content li {
+            margin: 6px 0;
+        }
+
+        .message-content p {
+            margin: 10px 0;
+        }
+
+        .message-content blockquote {
+            border-left: 3px solid rgba(99, 102, 241, 0.5);
+            padding-left: 14px;
+            margin: 10px 0;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border-bottom-right-radius: 6px;
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .message.user .message-content pre {
+            background: rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .message.user .message-content .code-header {
+            background: rgba(0,0,0,0.2);
+            border-bottom-color: rgba(255,255,255,0.1);
+        }
+
+        .message.user .message-content :not(pre) > code {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+            color: #e0e7ff;
+        }
+
+        .message.user .message-content blockquote {
+            border-left-color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.9);
+        }
+
+        .message.assistant .message-content {
+            background: #1f1f1f;
+            color: #e5e7eb;
+            border-bottom-left-radius: 6px;
+            border-color: #2a2a2a;
+        }
+
+        .message-image-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .message-image {
+            max-width: 100%;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .image-download-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+        }
+
+        .message-image-container:hover .image-download-btn {
+            opacity: 1;
+        }
+
+        .image-download-btn:hover {
+            background: rgba(0,0,0,0.9);
+            transform: translateY(-1px);
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            margin-top: 8px;
+            color: #a5b4fc;
+            font-weight: 500;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+            font-size: 12px;
+            color: #d1d5db;
+        }
+
+        .message-content:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0,0,0,0.5);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .input-container {
+            padding: 24px 32px;
+            background: #111111;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 14px;
+            align-items: flex-end;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .input-box {
+            flex: 1;
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px 120px 16px 18px;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: all 0.2s;
+            min-height: 58px;
+            max-height: 200px;
+            background: #1a1a1a;
+            color: #e5e7eb;
+        }
+
+        textarea::placeholder {
+            color: #6b7280;
+        }
+
+        textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .input-actions {
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-btn {
+            padding: 8px;
+            background: #1f1f1f;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #9ca3af;
+        }
+
+        .input-btn:hover {
+            background: #262626;
+            color: #d1d5db;
+            border-color: #374151;
+        }
+
+        .input-btn.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-color: #6366f1;
+            color: white;
+        }
+
+        .send-btn {
+            padding: 16px 26px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #f3f4f6;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #d1d5db;
+            font-size: 14px;
+        }
+
+        select, .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            background: #111111;
+            color: #e5e7eb;
+        }
+
+        select:focus, .form-textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .modal-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .modal-btn.secondary {
+            background: #1f1f1f;
+            color: #d1d5db;
+            border: 1px solid #2a2a2a;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #262626;
+            border-color: #374151;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #9ca3af;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #2a2a2a;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 12px 0;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6b7280;
+            gap: 18px;
+        }
+
+        .empty-icon {
+            font-size: 72px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="createNewConversation()">
+                    <span>➕</span>
+                    <span>New Chat</span>
+                </button>
+            </div>
+            <div class="conversations" id="conversationsList"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="chat-header">
+                <div class="chat-title" id="chatTitle">New Chat</div>
+                <div class="model-selector">
+                    <label for="modelSelect">Model:</label>
+                    <select id="modelSelect" onchange="updateModel()">
+                        <!-- Text/Multimodal Models -->
+                        <option value="gpt-4" selected>GPT-4</option>
+                        <option value="llama-3.2-90b">Llama 3.2 90B</option>
+                        <option value="llama-3.3-70b">Llama 3.3 70B</option>
+                        <option value="phi-4">Phi 4</option>
+                        <option value="wizardlm-2-7b">WizardLM 2 7B</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        <option value="command-r">Command R</option>
+                        <option value="qwq-32b">QwQ 32B</option>
+                        <option value="deepseek-v3">DeepSeek V3</option>
+                        <option value="airoboros-70b">Airoboros 70B</option>
+                        <option value="lzlv-70b">LZLV 70B</option>
+                        <optgroup label="─────────────────"></optgroup>
+                        <optgroup label="Image Generation"></optgroup>
+                        <option value="sdxl-turbo">SDXL Turbo</option>
+                        <option value="sd-3.5">SD 3.5</option>
+                        <option value="flux">Flux</option>
+                        <option value="flux-pro">Flux Pro</option>
+                        <option value="flux-dev">Flux Dev</option>
+                        <option value="flux-schnell">Flux Schnell</option>
+                        <option value="dall-e-3">DALL-E 3</option>
+                        <option value="midjourney">Midjourney</option>
+                    </select>
+                </div>
+                <button class="settings-btn" onclick="openSettings()">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <div class="empty-text">Start a conversation</div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <div class="input-box">
+                        <textarea id="messageInput" placeholder="Type your message..." rows="1"></textarea>
+                        <div class="input-actions">
+                            <button class="input-btn" id="imageBtn" onclick="toggleImageMode()" title="Generate Image">
+                                <span>🖼️</span>
+                            </button>
+                            <button class="input-btn" onclick="openSettings()" title="Settings">
+                                <span>⚙️</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <span id="sendBtnText">Send</span>
+                        <span id="sendBtnIcon">📤</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">⚙️ Chat Settings</div>
+            
+            <div class="form-group">
+                <label class="form-label">System Prompt (Optional)</label>
+                <textarea class="form-textarea" id="systemPrompt" placeholder="You are a helpful assistant..."></textarea>
+                <small style="color: #718096; margin-top: 4px; display: block;">Set instructions for how the AI should behave</small>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeSettings()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentConversationId = null;
+        let isImageMode = false;
+        let isGenerating = false;
+        const IMAGE_MODELS = ['sdxl-turbo', 'sd-3.5', 'flux', 'flux-pro', 'flux-dev', 'flux-schnell', 'dall-e-3', 'midjourney'];
+
+        // Configure marked for markdown rendering
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConversations();
+            autoResizeTextarea();
+            
+            document.getElementById('messageInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
+
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('messageInput');
+            textarea.addEventListener('input', () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+            });
+        }
+
+        async function loadConversations() {
+            try {
+                // Load conversations from Django template data
+                const conversationsData = {{ conversations|safe }};
+                
+                const list = document.getElementById('conversationsList');
+                list.innerHTML = '';
+                
+                if (conversationsData.length === 0) {
+                    await createNewConversation();
+                } else {
+                    // Sort by ID descending to get latest first
+                    conversationsData.sort((a, b) => b.id - a.id);
+                    
+                    conversationsData.forEach(conv => {
+                        addConversationToSidebar(conv);
+                    });
+                    
+                    // Select the most recent conversation (first one)
+                    if (!currentConversationId) {
+                        await selectConversation(conversationsData[0].id);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                await createNewConversation();
+            }
+        }
+
+        async function createNewConversation() {
+            try {
+                const response = await fetch('/api/conversations/create/', {
+                    method: 'POST',
+                });
+                const data = await response.json();
+                currentConversationId = data.id;
+                
+                // Add to top of sidebar
+                const list = document.getElementById('conversationsList');
+                const tempDiv = document.createElement('div');
+                addConversationToSidebar(data);
+                const newItem = list.querySelector(`[data-id="${data.id}"]`);
+                if (newItem) {
+                    list.insertBefore(newItem, list.firstChild);
+                }
+                
+                loadMessages(data.id);
+                document.getElementById('chatTitle').textContent = data.title;
+            } catch (error) {
+                console.error('Error creating conversation:', error);
+            }
+        }
+
+        function addConversationToSidebar(conv) {
+            const list = document.getElementById('conversationsList');
+            const item = document.createElement('div');
+            item.className = 'conversation-item' + (conv.id === currentConversationId ? ' active' : '');
+            item.dataset.id = conv.id;
+            item.innerHTML = `
+                <div class="conversation-title">${conv.title}</div>
+                <button class="delete-btn" onclick="deleteConversation(${conv.id}, event)">🗑️</button>
+            `;
+            item.onclick = (e) => {
+                if (!e.target.classList.contains('delete-btn')) {
+                    selectConversation(conv.id);
+                }
+            };
+            
+            list.insertBefore(item, list.firstChild);
+        }
+
+        async function selectConversation(convId) {
+            currentConversationId = convId;
+            
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.id == convId);
+            });
+            
+            await loadMessages(convId);
+            await loadSettings(convId);
+        }
+
+        async function deleteConversation(convId, event) {
+            event.stopPropagation();
+            
+            if (!confirm('Delete this conversation?')) return;
+            
+            try {
+                await fetch(`/api/conversations/${convId}/delete/`, {
+                    method: 'DELETE',
+                });
+                
+                document.querySelector(`[data-id="${convId}"]`).remove();
+                
+                if (currentConversationId === convId) {
+                    await createNewConversation();
+                }
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+            }
+        }
+
+        async function loadMessages(convId) {
+            try {
+                const response = await fetch(`/api/conversations/${convId}/messages/`);
+                const data = await response.json();
+                
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '';
+                
+                if (data.messages.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">💬</div>
+                            <div class="empty-text">Start a conversation</div>
+                        </div>
+                    `;
+                } else {
+                    data.messages.forEach(msg => {
+                        addMessageToUI(msg);
+                    });
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function addMessageToUI(msg) {
+            const container = document.getElementById('messagesContainer');
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${msg.role}`;
+            
+            const avatar = msg.role === 'user' ? '👤' : '🤖';
+            
+            let content = msg.content;
+            if (msg.is_image) {
+                content = `
+                    <div class="message-image-container">
+                        <img src="${msg.content}" class="message-image" alt="Generated image">
+                        <button class="image-download-btn" onclick="downloadImage('${msg.content}')">
+                            ⬇️ Download
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Render markdown for text content
+                content = marked.parse(content);
+            }
+            
+            const modelBadge = msg.model_used ? `<div class="model-badge">${msg.model_used}</div>` : '';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    ${!msg.is_image ? `<button class="copy-btn" onclick="copyMessage(this)">📋 Copy</button>` : ''}
+                    ${content}
+                    ${modelBadge}
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            
+            // Add copy buttons to code blocks
+            messageDiv.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+                
+                // Detect language
+                const language = block.className.match(/language-(\w+)/)?.[1] || 'code';
+                
+                // Wrap code block with header
+                const pre = block.parentElement;
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <div class="code-header">
+                        <span class="code-language">${language}</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">
+                            <span>📋</span> Copy
+                        </button>
+                    </div>
+                `;
+                pre.insertBefore(wrapper.firstElementChild, block);
+            });
+            
+            scrollToBottom();
+        }
+
+        function downloadImage(url) {
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `generated-image-${Date.now()}.png`;
+                    link.click();
+                })
+                .catch(err => {
+                    console.error('Download failed:', err);
+                    // Fallback: open in new tab
+                    window.open(url, '_blank');
+                });
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('pre');
+            const code = pre.querySelector('code');
+            const text = code.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span>✅</span> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                }, 2000);
+            });
+        }
+
+        async function sendMessage() {
+            if (isGenerating) return;
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            if (!currentConversationId) {
+                await createNewConversation();
+            }
+            
+            // Check if current model is an image model
+            const currentModel = document.getElementById('modelSelect').value;
+            const isImageModel = IMAGE_MODELS.includes(currentModel);
+            
+            isGenerating = true;
+            updateSendButton(true);
+            
+            input.value = '';
+            input.style.height = 'auto';
+            
+            const userMsg = {
+                role: 'user',
+                content: message,
+                is_image: false
+            };
+            addMessageToUI(userMsg);
+            
+            try {
+                const response = await fetch('/api/messages/send/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: currentConversationId,
+                        message: message,
+                        response_type: isImageModel || isImageMode ? 'image' : 'text'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessageToUI(data.message);
+                    
+                    if (data.conversation_title) {
+                        document.getElementById('chatTitle').textContent = data.conversation_title;
+                        const convItem = document.querySelector(`[data-id="${currentConversationId}"] .conversation-title`);
+                        if (convItem) {
+                            convItem.textContent = data.conversation_title;
+                        }
+                    }
+                } else {
+                    showError(data.error || 'An error occurred while generating response');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showError('Failed to send message. Please check your connection and try again.');
+            } finally {
+                isGenerating = false;
+                updateSendButton(false);
+            }
+        }
+
+        async function updateModel() {
+            const model = document.getElementById('modelSelect').value;
+            const isImageModel = IMAGE_MODELS.includes(model);
+            
+            // Update image mode button visibility
+            const imageBtn = document.getElementById('imageBtn');
+            if (isImageModel) {
+                imageBtn.style.display = 'none';
+                isImageMode = false;
+            } else {
+                imageBtn.style.display = 'flex';
+            }
+            
+            // Update placeholder
+            const input = document.getElementById('messageInput');
+            input.placeholder = isImageModel ? 'Describe the image you want to generate...' : 'Type your message...';
+            
+            if (!currentConversationId) return;
+            
+            try {
+                await fetch(`/api/conversations/${currentConversationId}/settings/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        image_model: model,
+                        system_prompt: document.getElementById('systemPrompt').value
+                    })
+                });
+            } catch (error) {
+                console.error('Error updating model:', error);
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('messagesContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = '⚠️ ' + message;
+            container.appendChild(errorDiv);
+            scrollToBottom();
+        }
+
+        function updateSendButton(generating) {
+            const btn = document.getElementById('sendBtn');
+            const text = document.getElementById('sendBtnText');
+            const icon = document.getElementById('sendBtnIcon');
+            
+            btn.disabled = generating;
+            
+            if (generating) {
+                text.textContent = 'Generating';
+                icon.innerHTML = '<div class="spinner"></div>';
+            } else {
+                text.textContent = 'Send';
+                icon.textContent = '📤';
+            }
+        }
+
+        function toggleImageMode() {
+            isImageMode = !isImageMode;
+            const btn = document.getElementById('imageBtn');
+            btn.classList.toggle('active', isImageMode);
+            
+            const input = document.getElementById('messageInput');
+            input.placeholder = isImageMode ? 'Describe the image you want to generate...' : 'Type your message...';
+        }
+
+        async function openSettings() {
+            if (currentConversationId) {
+                await loadSettings(currentConversationId);
+            }
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        async function loadSettings(convId) {
+            try {
+                const response = await fetch(`/api/conversations/${convId}/settings/get/`);
+                const data = await response.json();
+                
+                document.getElementById('modelSelect').value = data.model;
+                document.getElementById('systemPrompt').value = data.system_prompt;
+                
+                // Update image button visibility
+                updateModel();
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function saveSettings() {
+            if (!currentConversationId) return;
+            
+            const settings = {
+                model: document.getElementById('modelSelect').value,
+                image_model: document.getElementById('modelSelect').value,
+                system_prompt: document.getElementById('systemPrompt').value
+            };
+            
+            try {
+                await fetch(`/api/conversations/${currentConversationId}/settings/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                closeSettings();
+            } catch (error) {
+                console.error('Error saving settings:', error);
+            }
+        }
+
+        function copyMessage(btn) {
+            const messageContent = btn.parentElement;
+            // Get the original markdown text from the message content
+            let textToCopy = messageContent.textContent.replace('📋 Copy', '').trim();
+            
+            // Try to get the raw text without HTML formatting
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = messageContent.innerHTML;
+            const copyBtn = tempDiv.querySelector('.copy-btn');
+            const modelBadge = tempDiv.querySelector('.model-badge');
+            if (copyBtn) copyBtn.remove();
+            if (modelBadge) modelBadge.remove();
+            
+            // Get text content
+            textToCopy = tempDiv.textContent.trim();
+            
+            navigator.clipboard.writeText(textToCopy);
+            
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Close modal on outside click
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>

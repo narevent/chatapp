@@ -1,0 +1,20 @@
+[Unit]
+Description=Gunicorn daemon for chat Django application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/chat
+Environment="PATH=/var/www/chat/venv/bin"
+EnvironmentFile=/var/www/chat/.env
+ExecStart=/var/www/chat/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/var/www/chat/gunicorn.sock \
+    --timeout 60 \
+    --access-logfile /var/www/chat/logs/gunicorn-access.log \
+    --error-logfile /var/www/chat/logs/gunicorn-error.log \
+    chatapp.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
