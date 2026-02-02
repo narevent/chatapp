@@ -5,8 +5,8 @@ set -e
 PROJECT_NAME="chatapp"                                    # Project name (used for directories and services)
 PROJECT_DIR="/var/www/chatapp"                            # Where to install the project
 REPO_URL="https://github.com/narevent/chatapp.git"       # GitHub repository URL
-DOMAIN_NAMES="chat.vetgaaf.tech"               # Space-separated domain names
-PRIMARY_DOMAIN="chat.vetgaaf.tech"                              # Primary domain (first one)
+DOMAIN_NAMES="chatapp.vetgaaf.tech"               # Space-separated domain names
+PRIMARY_DOMAIN="chatapp.vetgaaf.tech"                              # Primary domain (first one)
 WSGI_MODULE="chatapp.wsgi:application"                    # Django WSGI module (usually projectname.wsgi:application)
 
 SERVICE_NAME="gunicorn-${PROJECT_NAME}"

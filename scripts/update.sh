@@ -4,7 +4,7 @@ set -e
 # CONFIGURATION
 PROJECT_NAME="chatapp"                                    # Project name
 PROJECT_DIR="/var/www/chatapp"                            # Project directory
-PRIMARY_DOMAIN="chat.vetgaaf.tech"                              # Primary domain
+PRIMARY_DOMAIN="chatapp.vetgaaf.tech"                              # Primary domain
 
 SERVICE_NAME="gunicorn-${PROJECT_NAME}"
 

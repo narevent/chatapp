@@ -46,7 +46,7 @@ read -r create_key
 
 if [ "$create_key" = "y" ]; then
     if [ ! -f ~/.ssh/id_rsa ]; then
-        ssh-keygen -t rsa -b 4096 -C "deploy@chat.vetgaaf.tech" -f ~/.ssh/id_rsa -N ""
+        ssh-keygen -t rsa -b 4096 -C "deploy@chatapp.vetgaaf.tech" -f ~/.ssh/id_rsa -N ""
         echo ""
         echo "SSH public key created. Add this to your GitHub repository's Deploy Keys:"
         echo "https://github.com/YOUR_USERNAME/YOUR_REPO/settings/keys"

@@ -4,7 +4,7 @@
 PROJECT_NAME="chatapp"                                    # Project name
 PROJECT_DIR="/var/www/chatapp"                            # Project directory
 BACKUP_DIR="/var/backups/chatapp"                         # Backup directory
-SITE_URL="https://chat.vetgaaf.tech"                            # Primary site URL
+SITE_URL="https://chatapp.vetgaaf.tech"                            # Primary site URL
 
 SERVICE_NAME="gunicorn-${PROJECT_NAME}"
 
